@@ -1,0 +1,6 @@
+# A DUPLO brick of nx x ny studs, nz bricks high. Geometry comes from brick.py; a task sets the size, e.g.
+#   red_2x4: {asset: duplo/brick, builder_args: {nx: 4, ny: 2, nz: 1}, rgba: [...], mass: 0.0122}
+builder: brick.py:brick
+builder_args: {nx: 2, ny: 2, nz: 1}
+mass: 0.00675
+rgba: [0.9, 0.9, 0.9, 1]

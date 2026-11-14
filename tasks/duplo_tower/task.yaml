@@ -1,0 +1,51 @@
+# QuestCollect's task as a plugin task: four real DUPLO parts (BrickLink masses), stacked into one fixed tower.
+# The predicates below describe the stages; task.py refines them (stud-grid snap test, a tower that may stand
+# either way round on its symmetric base).
+task: duplo_tower
+instruction: "Build the tower in the taped area: red 2x4 at the bottom, then blue 2x3, yellow 2x2, and green 1x2x2
+  on top. Press each brick down until it clicks."
+embodiment: franka_bimanual
+scene: table
+plugin: task.py:TowerTask
+objects:                     # bottom to top
+  red_2x4:     {asset: duplo/brick, builder_args: {nx: 4, ny: 2, nz: 1}, rgba: [0.86, 0.1, 0.12, 1], mass: 0.0122, label: red 2x4}
+  blue_2x3:    {asset: duplo/brick, builder_args: {nx: 3, ny: 2, nz: 1}, rgba: [0.1, 0.35, 0.85, 1], mass: 0.00959, label: blue 2x3}
+  yellow_2x2:  {asset: duplo/brick, builder_args: {nx: 2, ny: 2, nz: 1}, rgba: [0.98, 0.78, 0.1, 1], mass: 0.00675, label: yellow 2x2}
+  green_1x2x2: {asset: duplo/brick, builder_args: {nx: 2, ny: 1, nz: 2}, rgba: [0.15, 0.65, 0.25, 1], mass: 0.00795, label: green 1x2x2}
+params:
+  # Each brick above the base relative to the brick below: [dx, dy] in studs in the lower brick's frame, yaw in deg.
+  tower: [[-0.5, 0.0, 0], [0.5, 0.0, 0], [0.5, 0.0, 90]]
+  tol_xy: 0.004
+  tol_z: 0.003
+  tol_yaw_deg: 8
+  snap: {press_n: 6.0, pull_n: 10.0, align_xy: 0.001, align_z: 0.0015, align_yaw_deg: 4}
+regions:
+  build_area: {center: [0.45, 0.0], half: [0.07, 0.07]}
+spawn:                       # every brick in its own region, alternating arms in build order
+  red_2x4:     {region: {center: [0.36, 0.20], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+  blue_2x3:    {region: {center: [0.36, -0.20], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+  yellow_2x2:  {region: {center: [0.56, 0.20], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+  green_1x2x2: {region: {center: [0.56, -0.20], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+stages:
+  - name: base_in_area
+    object: red_2x4
+    label: red 2x4 in the area
+    when: {all: [{inside: {object: red_2x4, region: build_area}}, {upright: {object: red_2x4, max_tilt_deg: 8}}]}
+  - name: blue_clicked
+    object: blue_2x3
+    label: blue 2x3 clicked on
+    when: {all: [{stage: base_in_area}, {snapped: {a: red_2x4, b: blue_2x3}}]}
+  - name: yellow_clicked
+    object: yellow_2x2
+    label: yellow 2x2 clicked on
+    when: {all: [{stage: blue_clicked}, {snapped: {a: blue_2x3, b: yellow_2x2}}]}
+  - name: green_clicked
+    object: green_1x2x2
+    label: green 1x2x2 clicked on
+    when: {all: [{stage: yellow_clicked}, {snapped: {a: yellow_2x2, b: green_1x2x2}}]}
+events:
+  - {on: stage_reached, cue: placed, toast: "{stage}"}
+  - {on: snap_on, cue: click}
+  - {on: snap_off, cue: unclick}
+  - {on: success, cue: complete}
+tags: [recovery, slow, odd grasp, re-press]

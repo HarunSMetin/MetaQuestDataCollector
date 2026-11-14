@@ -1,0 +1,19 @@
+task: open_drawer
+instruction: "Pull the drawer open by its handle, then let go."
+embodiment: franka_single
+scene: table
+objects:
+  drawer: {asset: furniture/drawer, pos: [0.62, 0.0], yaw_deg: 0, rgba: [0.388, 0.4, 0.945, 1]}
+stages:
+  - name: drawer_open
+    label: drawer open
+    object: drawer
+    when: {joint_at: {joint: drawer_slide, min: 0.12}}
+success:
+  all:
+    - {stage: drawer_open}
+    - {not: {contact: {a: "gripper:arm", b: drawer_drawer}}}
+events:
+  - {on: stage_reached, cue: placed, toast: "{stage}"}
+  - {on: success, cue: complete}
+tags: [recovery, slow, slipped]

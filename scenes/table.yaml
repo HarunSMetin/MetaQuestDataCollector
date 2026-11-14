@@ -1,0 +1,8 @@
+# A table in front of the operator with two fixed cameras (ALOHA naming).
+name: table
+physics: {dt: 0.002, control_hz: 50, impratio: 10}   # 500 Hz physics, 50 Hz control + recording
+table: {center: [0.4, 0.0], half: [0.55, 0.75], height: 0.75, rgba: [0.32, 0.27, 0.23, 1], friction: 1.0}
+cameras:
+  cam_high: {pos: [0.12, 0.0, 1.70], lookat: [0.5, 0.0, 0.75], fovy: 62}
+  cam_low: {pos: [1.15, 0.0, 1.10], lookat: [0.35, 0.0, 0.85], fovy: 60}
+props: []                    # static geometry: {name, type: box, size, pos, rgba, collide}

@@ -1,0 +1,43 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Web
+web/node_modules/
+web/dist/
+web/e2e/node_modules/
+web/e2e/out/
+web/e2e/iwer.bundle.js
+*.tsbuildinfo
+
+# Assets fetched by scripts/fetch_assets.sh
+assets/third_party/
+
+# Generated data / secrets
+data/
+certs/
+*.hdf5
+*.tmp
+*.log
+MUJOCO_LOG.TXT
+.env
+
+# Personal notes (machine-specific paths / IPs)
+howToRun.md
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Training runs (outside xrcollect)
+outputs/
+
+# Compressed old datasets/runs
+archive/

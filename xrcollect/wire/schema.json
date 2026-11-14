@@ -1,0 +1,55 @@
+{
+  "_comment": "The ONE description of the binary wire format and shared constants. Run `xrc codegen` after editing: it writes xrcollect/protocol_gen.py and web/src/protocol.gen.ts. All values little endian.",
+  "version": 1,
+  "constants": {
+    "MSG_INPUT": 1,
+    "MSG_POSE": 2,
+    "MSG_GHOST": 3,
+    "SRC_NONE": 0,
+    "SRC_CONTROLLER": 1,
+    "SRC_HAND": 2,
+    "N_HAND_JOINTS": 25,
+    "N_BUTTONS": 8,
+    "FLAG_RECORDING": 128,
+    "MAX_FLAG_ARMS": 7
+  },
+  "buttons": ["TRIGGER", "SQUEEZE", "STICK_X", "STICK_Y", "PRIMARY", "SECONDARY", "STICK_PRESS", "MENU"],
+  "hand_joints": [
+    "wrist",
+    "thumb-metacarpal", "thumb-phalanx-proximal", "thumb-phalanx-distal", "thumb-tip",
+    "index-finger-metacarpal", "index-finger-phalanx-proximal", "index-finger-phalanx-intermediate",
+    "index-finger-phalanx-distal", "index-finger-tip",
+    "middle-finger-metacarpal", "middle-finger-phalanx-proximal", "middle-finger-phalanx-intermediate",
+    "middle-finger-phalanx-distal", "middle-finger-tip",
+    "ring-finger-metacarpal", "ring-finger-phalanx-proximal", "ring-finger-phalanx-intermediate",
+    "ring-finger-phalanx-distal", "ring-finger-tip",
+    "pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate",
+    "pinky-finger-phalanx-distal", "pinky-finger-tip"
+  ],
+  "joint_aliases": {"J_WRIST": "wrist", "J_THUMB_TIP": "thumb-tip", "J_INDEX_TIP": "index-finger-tip",
+                    "J_MIDDLE_META": "middle-finger-metacarpal", "J_MIDDLE_TIP": "middle-finger-tip"},
+  "input_header": [
+    {"name": "type", "fmt": "u8"},
+    {"name": "src_left", "fmt": "u8"},
+    {"name": "src_right", "fmt": "u8"},
+    {"name": "version", "fmt": "u8"},
+    {"name": "seq", "fmt": "u32"},
+    {"name": "t_echo_ms", "fmt": "f64"}
+  ],
+  "input_body": [
+    {"name": "head", "floats": 7, "doc": "pos xyz, quat xyzw (XR local-floor)"}
+  ],
+  "hand": [
+    {"name": "pose", "floats": 7, "doc": "controller grip pose or hand wrist pose"},
+    {"name": "buttons", "floats": "N_BUTTONS"},
+    {"name": "joints", "floats": "N_HAND_JOINTS*7", "doc": "25 WebXR hand joints, zeros for controllers"},
+    {"name": "pinch", "floats": 2, "doc": "thumb-index, thumb-middle distance [m]"}
+  ],
+  "pose_header": [
+    {"name": "type", "fmt": "u8"},
+    {"name": "flags", "fmt": "u8", "doc": "bit i: arm i engaged; FLAG_RECORDING"},
+    {"name": "nbody", "fmt": "u16"},
+    {"name": "seq", "fmt": "u32"},
+    {"name": "t_server_ms", "fmt": "f64"}
+  ]
+}

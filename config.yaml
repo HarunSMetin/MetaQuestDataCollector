@@ -1,0 +1,68 @@
+# xrcollect platform settings. Pass another file with `xrc serve --config my.yaml`.
+# What defines the world (robots, scene, objects, task logic) is NOT here: see tasks/, embodiments/, scenes/,
+# objects/. Those are stored with every episode.
+
+task: tasks/stack_two_blocks   # task folder or YAML file; also `xrc serve --task tasks/duplo_tower`
+
+teleop:
+  mode: controllers          # controllers | hands
+  control: clutched          # clutched (relative, default) | absolute (gripper goes to the hand) | rate
+  rate_gain: 2.0             # rate control: m/s per metre of hand offset
+  scale: 1.0                 # hand motion -> end-effector motion
+  mapping: null              # {l: <arm>, r: <arm>}; null = by embodiment (see xrcollect/teleop.py)
+  pinch_open_m: 0.08         # thumb-index distance mapped to a fully open gripper
+  pinch_closed_m: 0.015
+  filter_min_cutoff: 1.5     # One-Euro filter
+  filter_beta: 0.5
+
+ik:
+  position_cost: 1.0
+  orientation_cost: 0.6
+  posture_cost: 0.01
+  max_lead: 0.15             # rad the IK may run ahead of the measured joints (no windup when an arm is blocked)
+  damping_cost: 0.1          # prefer small joint motions
+  iterations: 2
+  warn_m: 0.03               # "out of reach" when the target stays this far from what the IK achieves
+
+record:
+  out_dir: data/episodes     # sibling folders are listed as datasets in the dashboard
+  countdown_s: 3
+  auto_stop_tail_s: 1.0      # success must hold this long before a take stops by itself
+  cameras: null              # previews; null = every camera of the scene
+  operator: operator
+  session: ""
+  target_takes: 0            # session quota shown in the headset (0 = none)
+  action_noise: 0.0          # DART: rad drift (std) on the executed joint targets (0.003 ~ 3.5 mm at the TCP)
+
+server:
+  host: 0.0.0.0
+  port: 8000
+  https_port: 8443
+  cert_dir: certs
+
+curate:                      # which recorded steps go into a dataset (review card, episode list, export)
+  include_failures: false
+  max_contact_frac: {link_table: 0.01, arm_arm: 0.0, tip_table: 0.3}
+  cut_contacts: [link_table, arm_arm]   # cut these moments out of the take instead of rejecting it
+  contact_margin_s: 0.2
+  trim_idle: true
+  shared_frames: operator    # shared-control takes: only the operator's steps, or `all`
+  until_stage: null          # e.g. 1: each take only until the first stage was reached (+ until_stage_tail_s)
+  until_stage_tail_s: 1.0
+  cut_labels: [bad]          # time annotations with these labels are cut out
+
+safety:
+  enabled: true              # margins are per embodiment (embodiments/*.yaml)
+  warn_rad: 0.05             # buzz when the filter changes a joint target this much
+
+control:                     # who drives: teleop | policy | shared (policy until you take over)
+  mode: teleop
+  policy: null               # module:Class or file.py:Class of a PolicyRunner (xrcollect/policy.py)
+  policy_args: {}
+
+feedback:
+  hold_tick_s: 0.25
+  quiet_s: 0.4
+  warn_sound_gap_s: 1.0
+  guidance: true             # operator-only ghost of the next object's goal pose + distance readout
+  # cues: {name: {haptic: [intensity, ms, repeat, gap_ms], sound: name}} overrides single entries of the defaults

@@ -1,0 +1,28 @@
+task: stack_two_blocks
+instruction: "Put the red block in the taped area, then the blue block on top of it."
+embodiment: franka_bimanual
+scene: table
+objects:
+  red_block:  {asset: blocks/cube_4cm, rgba: [0.85, 0.1, 0.1, 1], mass: 0.05, label: red block}
+  blue_block: {asset: blocks/cube_4cm, rgba: [0.1, 0.3, 0.9, 1], mass: 0.05, label: blue block}
+regions:                     # named areas, drawn as tape in the scene (visible to the cameras)
+  build_area: {center: [0.50, 0.0], half: [0.06, 0.06]}
+spawn:                       # start-state distribution, per object
+  red_block:  {region: {center: [0.42, 0.22], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+  blue_block: {region: {center: [0.42, -0.22], half: [0.04, 0.04]}, yaw_deg: [-15, 15]}
+stages:                      # ordered progress; each is a predicate over the simulator state
+  - name: red_in_area
+    label: red block in the area
+    when: {all: [{inside: {object: red_block, region: build_area}}, {upright: red_block}]}
+  - name: blue_on_red
+    label: blue block on the red block
+    when: {all: [{stage: red_in_area}, {on_top: {object: blue_block, base: red_block, tol_xy: 0.012, tol_z: 0.004}}]}
+success:
+  all: [{stage: blue_on_red}, {not_held: any}, {at_rest: {objects: all, max_speed: 0.02}}]
+events:                      # task feedback, mapped to haptic/sound cues by name (config.yaml feedback.cues)
+  - {on: stage_reached, cue: placed, toast: "{stage}"}
+  - {on: success, cue: complete}
+goal_view:                   # what the goal panel draws (relative to the anchor object)
+  anchor: red_block
+  show:
+    - {object: blue_block, pose: {pos: [0, 0, 0.04], yaw: 0}}
