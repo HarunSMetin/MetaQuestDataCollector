@@ -170,8 +170,10 @@ controller models; turn them off with *Button hints* in the wrist menu.
 | **Left stick press** | Recenter the robots in front of you |
 | Ray + Trigger | Press panel buttons; grab a panel by its title bar, then push or pull it with the stick |
 
-**Hands mode:** pinch thumb and middle finger to toggle the clutch. The thumb–index distance sets the gripper.
-Look at your left palm for the menu.
+**Hands mode:** curl your middle, ring and little finger into your palm and open them again to toggle the
+clutch (one curl = one toggle; index and thumb stay free). The thumb–index distance sets the gripper, and it holds
+still while the three fingers are curled, so the gesture never drops or grabs anything. Look at your left palm for
+the menu. If the gesture triggers too easily or not at all on your hands, tune `teleop.curl_on` / `curl_off`.
 
 **Control modes** (wrist menu → Tools, or `teleop.control` in `config.yaml`):
 

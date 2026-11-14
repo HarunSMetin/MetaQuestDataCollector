@@ -112,12 +112,12 @@ check(s.tracked.l && s.tracked.r && !s.mode_mismatch, "hands tracked, no mode mi
 await page.evaluate(() => window.__xr.hands.right.position.set(0.15, 1.0, -0.3));  // place hand before engaging
 await sleep(500);
 const rh0 = (await status()).ee_pos.r;
-await page.evaluate(() => { const h = window.__xr.hands.right; h.poseId = "midpinch"; });
+await page.evaluate(() => { window.__xr.hands.right.poseId = "point"; });  // middle, ring, little finger curled
 await sleep(500);
 await page.evaluate(() => { window.__xr.hands.right.poseId = "default"; });
 await sleep(500);
 s = await status();
-check(s.engaged.r, "thumb-middle pinch toggles right arm engaged");
+check(s.engaged.r, "curling three fingers toggles right arm engaged");
 await page.evaluate(() => window.__xr.hands.right.updatePinchValue(1));
 await sleep(800);
 s = await status();

@@ -12,6 +12,8 @@ teleop:
   mapping: null              # {l: <arm>, r: <arm>}; null = by embodiment (see xrcollect/teleop.py)
   pinch_open_m: 0.08         # thumb-index distance mapped to a fully open gripper
   pinch_closed_m: 0.015
+  curl_on: 1.25              # hands clutch: curl middle+ring+little finger below this (1.9 open, 0.8 fist) to toggle,
+  curl_off: 1.5              # then open them past this before the next toggle
   filter_min_cutoff: 1.5     # One-Euro filter
   filter_beta: 0.5
 

@@ -30,6 +30,10 @@ class TeleopConfig(BaseModel):
     mapping: dict[str, str] | None = None
     pinch_open_m: float = 0.08
     pinch_closed_m: float = 0.015
+    # Hands clutch: close middle, ring and little finger (a loose fist, index and thumb free) and open them again
+    # to toggle. Per finger, curl = |tip - wrist| / |knuckle - wrist| (hand-size free): ~1.9 open, ~0.8 curled.
+    curl_on: float = 1.25              # all three below this: gesture made (toggles once)
+    curl_off: float = 1.5              # their mean back above this: hand open again, ready for the next toggle
     filter_min_cutoff: float = 1.5
     filter_beta: float = 0.5
 

@@ -10,7 +10,7 @@ Input (client -> server, every XR frame):
     f32[7]   control pose      (controller grip pose, or hand wrist pose)
     f32[8]   buttons           (trigger, squeeze, stick_x, stick_y, primary, secondary, stick_press, menu)
     f32[175] 25 hand joints    (pos xyz, quat xyzw each; zeros for controllers)
-    f32[2]   pinch distances   (thumb-index, thumb-middle) in metres
+    f32[2]   pinch distances   (thumb-index, thumb-middle) in metres; recorded, the clutch uses the joints
 
 Pose frame (server -> client), type=2 (live scene) or 3 (ghost: a reference take's bodies, operator-only):
   u8 type | u8 flags | u16 nbody | u32 seq | f64 t_server_ms

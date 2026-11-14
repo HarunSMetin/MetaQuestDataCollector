@@ -119,7 +119,7 @@ export class Hud {
     } else if (s.rec_state === "idle" && !s.replay && !s.edit) {
       const hint = ctrl
         ? "GRIP toggles control  ·  TRIGGER closes gripper  ·  Y opens menu"
-        : "Thumb+middle pinch to engage  ·  thumb+index = gripper  ·  palm up = menu";
+        : "Curl 3 fingers & open = take/release control  ·  thumb+index = gripper  ·  palm up = menu";
       text(g, hint, tx, hy, 24, { color: THEME.dim, weight: 600 });
     }
 

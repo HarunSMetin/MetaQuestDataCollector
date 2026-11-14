@@ -4,7 +4,8 @@ Pipeline per hand and control tick:
   XR pose -> MuJoCo world (frames.Placement) -> jump rejection -> One-Euro filter -> clutch -> workspace clamp
 
 Controllers: a Grip press toggles the clutch, Trigger closes the gripper, the buttons in BUTTONS send commands.
-Hands:       thumb-middle pinch toggles the clutch, thumb-index distance sets the gripper.
+Hands:       curling middle, ring and little finger (then opening them) toggles the clutch, thumb-index
+             distance sets the gripper.
 
 Which hand drives which arm is a mapping (config teleop.mapping, default by embodiment): two hands on two arms,
 one hand on a single arm, swapped for left-handed use, or both hands on one arm (the hand that engages drives).
@@ -19,7 +20,7 @@ import numpy as np
 from xrcollect.config import TeleopConfig
 from xrcollect.frames import Placement
 from xrcollect.protocol import (
-    B_MENU, B_PRIMARY, B_SECONDARY, B_SQUEEZE, B_STICK_PRESS, B_TRIGGER, HANDS, J_MIDDLE_META, J_WRIST,
+    B_MENU, B_PRIMARY, B_SECONDARY, B_SQUEEZE, B_STICK_PRESS, B_TRIGGER, HAND_JOINTS, HANDS, J_MIDDLE_META, J_WRIST,
     SRC_CONTROLLER, SRC_HAND, HandInput, InputFrame,
 )
 
@@ -203,20 +204,33 @@ class ControllerMapper:
         return self.engaged, gripper, commands
 
 
+# The three fingers of the clutch gesture: (tip, proximal knuckle) joint indices.
+CURL_FINGERS = [(HAND_JOINTS.index(f"{f}-finger-tip"), HAND_JOINTS.index(f"{f}-finger-phalanx-proximal"))
+                for f in ("middle", "ring", "pinky")]
+
+
+def finger_curl(h: HandInput) -> np.ndarray:
+    """Per finger (middle, ring, little): |tip - wrist| / |knuckle - wrist|. About 1.9 open, 0.8 in a fist; the
+    ratio does not depend on hand size."""
+    w = h.joints[J_WRIST, :3]
+    return np.array([np.linalg.norm(h.joints[t, :3] - w) / max(np.linalg.norm(h.joints[k, :3] - w), 1e-6)
+                     for t, k in CURL_FINGERS])
+
+
 class HandMapper:
-    """Control pose = middle-metacarpal position + wrist orientation (stable while pinching).
+    """Control pose = middle-metacarpal position + wrist orientation (does not move when the fingers curl).
 
     Gripper:  thumb-index distance, mapped linearly between closed and open distances.
-    Clutch:   thumb-middle pinch toggles engagement (with hysteresis so one pinch = one toggle).
+    Clutch:   curl middle, ring and little finger (index and thumb stay free), then open them: one toggle per
+              curl. Hysteresis (curl_on / curl_off) so one gesture = one toggle. While the fingers are curled the
+              gripper holds its value, so making the gesture never drops or grabs an object.
     """
-
-    CLUTCH_ON, CLUTCH_OFF = 0.018, 0.035
-    MIDDLE_MARGIN = 0.01
 
     def __init__(self, cfg: TeleopConfig):
         self.cfg = cfg
         self.engaged = False
         self._latched = False
+        self._grip = 1.0
 
     def reset(self) -> None:
         self.engaged = False
@@ -233,16 +247,15 @@ class HandMapper:
 
     def update(self, h: HandInput) -> tuple[bool, float]:
         """Returns (engaged, gripper open fraction)."""
-        d, d_index = h.pinch[1], h.pinch[0]
-        # An index pinch (closing the gripper) also brings the thumb near the middle fingertip;
-        # only count it as a clutch gesture when the thumb is clearly closer to the middle tip.
-        is_middle_pinch = d < self.CLUTCH_ON and d < d_index - self.MIDDLE_MARGIN
-        if not self._latched and is_middle_pinch:
+        c = finger_curl(h)
+        if not self._latched and c.max() < self.cfg.curl_on:
             self._latched = True
             self.engaged = not self.engaged
-        elif self._latched and d > self.CLUTCH_OFF:
+        elif self._latched and c.mean() > self.cfg.curl_off:
             self._latched = False
-        return self.engaged, self.gripper(h)
+        if not self._latched:
+            self._grip = self.gripper(h)
+        return self.engaged, self._grip
 
 
 # -- teleop ----------------------------------------------------------------------------------------

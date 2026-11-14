@@ -88,7 +88,10 @@ filter → physics → recorder) → binary pose frames back to the headset + JS
 - **Teleop** (`teleop.py`): placement → jump rejection → One-Euro filter → clutch → workspace clamp. `ArmClutch`
   has three position modes (`teleop.control` / `set_control`, `CONTROL_MODES`): `clutched` (default, relative,
   scaled), `absolute` (gripper at the hand), `rate` (hand offset = velocity, `rate_gain`, own workspace clamp).
-  Orientation is always relative to the engage pose, so re-engaging never jumps. Grip toggles the clutch.
+  Orientation is always relative to the engage pose, so re-engaging never jumps. Grip toggles the clutch; in hands
+  mode `HandMapper` toggles it when middle, ring and little finger curl (`finger_curl`: tip–wrist / knuckle–wrist,
+  computed server-side from the 25 joints; `curl_on` / `curl_off` hysteresis) and holds the gripper while they
+  are curled. Thumb–index distance (`pinch[0]`) is the gripper; `pinch[1]` (thumb–middle) is only recorded.
 - **Scene composition** (`scene/compose.py`): `build_spec` with MjSpec, then the model that runs is always compiled
   from the saved XML (`compile_scene`), so a live scene and one rebuilt from an episode are identical. World: z up,
   +x away from the operator, +y left. Geom group 5 = operator-only visuals (cameras render groups 0–2); regions are
