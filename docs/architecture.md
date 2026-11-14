@@ -130,6 +130,7 @@ outside MuJoCo goes through `extra_state`.
 | curation rules | `audit.why_not` / `select` / `kept_spans` only: the review card, Episodes tab and exporters all call them |
 | an exporter | a class with `begin` / `add_episode` / `finish`, registered in `export/base.EXPORTERS` |
 | a headset panel | create it in `xr/main.ts`, register world panels with `layout.add`, expose it on `window.__xrc` for e2e |
+| a setup step (extra, fetched asset, build step, Node or Python requirement) | `scripts/install.sh`, the README Quick start and its manual-install block, the CLAUDE.md command list, `xrc doctor` if it can be checked |
 | anything a user sees or does | README (recapture `docs/media/` with `web/e2e/screenshots.mjs` if it shows); anything about threads, tick order, endpoints or protocol: this file |
 
 ## Testing

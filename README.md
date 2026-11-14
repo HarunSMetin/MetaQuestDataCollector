@@ -111,19 +111,42 @@ the HTTP endpoints.
 
 ## Quick start
 
-You need Linux, Python 3.12, [uv](https://docs.astral.sh/uv/), Node 20+, and a GPU or EGL for offscreen
+You need Linux with `git` and `curl` (or `wget`), and a GPU driver or Mesa that provides EGL for offscreen
 rendering. For a USB connection to the headset you also need `adb`. The headset is a Meta Quest 3 (other WebXR
 headsets with controllers or hand tracking should work but are untested).
 
 ```bash
-git clone <this repo> && cd <repo>
+git clone https://github.com/HarunSMetin/MetaQuestDataCollector.git
+cd MetaQuestDataCollector
+./scripts/install.sh                # everything below, in one go; then:
+uv run xrc serve                    # open the headset page (below) and http://localhost:8000/dashboard/
+```
+
+`install.sh` needs no sudo and is safe to re-run. It:
+
+1. installs [uv](https://docs.astral.sh/uv/) for your user if it is missing (uv then brings Python 3.12);
+2. uses your Node.js if it is 20.19+ or 22.12+, otherwise downloads Node 22 LTS into `.tools/node` inside the repo
+   (checksum-verified; Node is only needed to build the web client);
+3. fetches the Franka Panda model from MuJoCo Menagerie into `assets/third_party/`;
+4. creates `.venv` with `uv sync` and builds the web client into `web/dist`;
+5. runs `uv run xrc doctor` and, if offscreen rendering fails, prints the package to install
+   (`sudo apt install libegl1 libgl1 libgles2`, or `libosmesa6` with `MUJOCO_GL=osmesa` on machines without a GPU).
+
+Options: `--lerobot` (LeRobot exporter, brings torch), `--mesh` (`xrc import-mesh`), `--e2e` (Playwright and
+Chromium for the headset-free tests), `--all`, `--yes` (no questions), `--no-doctor`.
+
+<details>
+<summary>Manual install (what the script does)</summary>
+
+```bash
 ./scripts/fetch_assets.sh           # Franka model from mujoco_menagerie -> assets/third_party/
 uv sync                             # add --extra lerobot for the LeRobot exporter (brings torch)
                                     # add --extra mesh for `xrc import-mesh`
-(cd web && npm ci && npm run build) # the server serves web/dist
+(cd web && npm ci && npm run build) # needs Node 20.19+ / 22.12+; the server serves web/dist
 uv run xrc doctor                   # checks assets, EGL, the web build, protocol files, adb
-uv run xrc serve                    # then open the headset page (below) and http://localhost:8000/dashboard/
 ```
+
+</details>
 
 No headset at hand? `uv run xrc view tasks/stack_two_blocks` opens a task in a desktop viewer, and
 `uv run xrc validate-task tasks/stack_two_blocks` watches the scripted expert solve it.
@@ -445,10 +468,12 @@ docs/               architecture.md, media/
 
 - Tests: `uv run --group dev pytest` (about a minute), and `cd web && npm run typecheck`.
 - Without a headset, `web/e2e/` drives the real pages with Meta's IWER emulated Quest 3 in headless Chromium
-  (`npm test`) and checks the dashboard's Scene and Data tabs (`npm run test:dashboard`). Setup is at the top of
-  each script; point them at a scratch copy of a task and a scratch `record.out_dir`, never at `data/episodes`.
+  (`npm test`) and checks the dashboard's Scene and Data tabs (`npm run test:dashboard`). Install the tools with
+  `./scripts/install.sh --e2e`. Setup is at the top of each script; point them at a scratch copy of a task and a
+  scratch `record.out_dir`, never at `data/episodes`.
 - `npm run dev` in `web/` runs Vite on :5173 with `/api` and `/ws` proxied to the server on :8000. The server
-  itself serves `web/dist`, so run `npm run build` after web changes.
+  itself serves `web/dist`, so run `npm run build` after web changes. If `install.sh` downloaded Node, it is in
+  `.tools/node/bin`: `PATH="$PWD/.tools/node/bin:$PATH" npm --prefix web run build`.
 - Screenshots in `docs/media/` come from `web/e2e/screenshots.mjs` (instructions at its top). The GIFs are the
   scripted expert rendered offscreen with `Expert.on_step`.
 

@@ -24,6 +24,7 @@ a relative path).
 ## Commands
 
 ```bash
+./scripts/install.sh [--lerobot] [--mesh] [--e2e] [--all] [--yes]   # all setup below in one go, no sudo, re-runnable
 ./scripts/fetch_assets.sh               # Franka model from mujoco_menagerie -> assets/third_party/ (gitignored)
 uv sync                                 # extras: --extra lerobot (LeRobot export, brings torch), --extra mesh (import-mesh)
 (cd web && npm ci && npm run build)     # the server serves web/dist: rebuild after every web change
@@ -46,9 +47,16 @@ cd web && npm run typecheck             # tsc --noEmit (also part of npm run bui
 cd web && npm run dev                   # vite on :5173, proxies /api and /ws to :8000
 ```
 
+`scripts/install.sh` installs uv per user if missing, uses the system Node only if it is 20.19+ / 22.12+ (Vite 8)
+and otherwise downloads Node 22 LTS into `.tools/node` (gitignored, checksum-verified), then runs the steps above
+and `xrc doctor`. It must stay free of absolute paths and sudo: system libraries (EGL, Playwright's Chromium deps)
+are only detected and the command printed. When setup steps change (a new extra, asset, build step or Node
+requirement), update the script, the README Quick start (and its manual-install block) and this list together. If
+`node` is not on PATH, use `PATH="$PWD/.tools/node/bin:$PATH"`.
+
 Headset-free end-to-end tests in `web/e2e/` (setup at the top of each script): `emulated-quest.mjs` (`npm test`,
 Meta's IWER emulated Quest 3 + Playwright on the real headset page) and `dashboard.mjs` (`npm run test:dashboard`,
-Scene + Data tabs). Once: `cd web/e2e && npm install && npx playwright install chromium && npm run build`. Serve a
+Scene + Data tabs). Once: `./scripts/install.sh --e2e` (or `cd web/e2e && npm ci && npx playwright install chromium && npm run build`). Serve a
 scratch setup: `cp -r tasks/stack_two_blocks <scratch>/task` and `uv run xrc serve --no-https --config <yaml with a
 scratch record.out_dir> --task <scratch>/task`, then `XRC_URL=http://localhost:<port> npm test`. They record and
 export into the server's out_dir and rewrite the served task file, so never point them at `data/episodes` or a

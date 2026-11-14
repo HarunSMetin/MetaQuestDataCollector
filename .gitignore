@@ -16,8 +16,9 @@ web/e2e/out/
 web/e2e/iwer.bundle.js
 *.tsbuildinfo
 
-# Assets fetched by scripts/fetch_assets.sh
+# Assets fetched by scripts/fetch_assets.sh, Node downloaded by scripts/install.sh
 assets/third_party/
+.tools/
 
 # Generated data / secrets
 data/

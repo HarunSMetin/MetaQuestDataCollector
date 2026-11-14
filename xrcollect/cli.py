@@ -406,7 +406,8 @@ def doctor():
     if env is not None:
         row(render_ok(env.model), f"offscreen rendering (MUJOCO_GL={os.environ['MUJOCO_GL']})",
             "try MUJOCO_GL=osmesa or check the NVIDIA EGL drivers")
-    row((ROOT / "web" / "dist" / "xr" / "index.html").exists(), "web client built", "cd web && npm ci && npm run build")
+    row((ROOT / "web" / "dist" / "xr" / "index.html").exists(), "web client built",
+        "./scripts/install.sh (or: cd web && npm ci && npm run build)")
     adb = shutil.which("adb")
     row(adb is not None, "adb installed", "sudo apt install android-tools-adb")
     if adb:
